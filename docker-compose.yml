@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: tiktok-clip-bot
+    environment:
+      # Twitch API
+      - TWITCH_CLIENT_ID=${TWITCH_CLIENT_ID}
+      - TWITCH_CLIENT_SECRET=${TWITCH_CLIENT_SECRET}
+      
+      # TikTok API
+      - TIKTOK_ACCESS_TOKEN=${TIKTOK_ACCESS_TOKEN}
+      - TIKTOK_UPLOAD_URL=${TIKTOK_UPLOAD_URL}
+      - TIKTOK_PUBLISH_URL=${TIKTOK_PUBLISH_URL}
+      
+      # Database
+      - DATABASE_URL=sqlite:///./clips.db
+      
+      # App config
+      - TWITCH_CHANNELS=${TWITCH_CHANNELS:-channel1,channel2}
+      - POLLING_INTERVAL=${POLLING_INTERVAL:-60}
+      - DRY_RUN=${DRY_RUN:-false}
+      - WHISPER_MODEL=${WHISPER_MODEL:-small}
+    
+    volumes:
+      # Persist database and clips
+      - ./data:/app/data
+      - ./clips:/app/clips
+      - ./logs:/app/logs
+    
+    command: >
+      python main.py 
+      --channels ${TWITCH_CHANNELS:-channel1,channel2}
+      --interval ${POLLING_INTERVAL:-60}
+      --whisper-model ${WHISPER_MODEL:-small}
+      ${DRY_RUN:+--dry-run}
+    
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"

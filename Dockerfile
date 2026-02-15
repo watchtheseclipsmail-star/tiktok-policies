@@ -17,8 +17,11 @@ RUN pip install --upgrade pip && pip install --no-cache-dir -r /app/requirements
 # Copy app
 COPY . /app
 
-RUN chmod +x /app/entrypoint.sh || true
+RUN chmod +x /app/main.py || true
 
-VOLUME ["/out"]
+VOLUME ["/app/data", "/app/clips", "/app/logs"]
 
-ENTRYPOINT ["/app/entrypoint.sh"]
+# Create data directories
+RUN mkdir -p /app/data /app/clips /app/logs
+
+ENTRYPOINT ["python", "/app/main.py"]
